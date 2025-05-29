@@ -4,8 +4,11 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage  # 👈 這行要加上
 from config import LINE_CHANNEL_ACCESS_TOKEN, LINE_CHANNEL_SECRET
 from linebot_handler import handle_event
+from database import init_db
+
 
 app = Flask(__name__)
+init_db()
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
