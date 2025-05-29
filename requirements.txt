@@ -1,0 +1,1 @@
+-e "Flask==2.3.2\nline-bot-sdk==2.4.2\ngunicorn==20.1.0" 
