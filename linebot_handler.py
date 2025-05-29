@@ -1,5 +1,10 @@
 from linebot.models import TextSendMessage
-from message_templates import welcome_message, cancel_success_message, reservation_instruction_message, confirm_match_message
+from message_templates import (
+    welcome_message,
+    cancel_success_message,
+    reservation_instruction_message,
+    confirm_match_message
+)
 from database import add_reservation, cancel_reservation
 from matcher import try_match
 from utils import format_currency, generate_group_id
@@ -26,16 +31,16 @@ def handle_event(event, line_bot_api):
                 reply = TextSendMessage(text="已收到共乘資訊，暫時還沒配對到人，請稍等。")
 
         except Exception:
-            reply = reservation_instruction_message()
+            reply = reservation_instruction_message
 
     elif text == "取消":
         cancel_reservation(user_id)
-        reply = cancel_success_message()
+        reply = cancel_success_message
 
-    elif text == "開始" or text == "start":
-        reply = welcome_message()
+    elif text in ["開始", "start"]:
+        reply = welcome_message
 
     else:
-        reply = reservation_instruction_message()
+        reply = reservation_instruction_message
 
     line_bot_api.reply_message(event.reply_token, reply)
