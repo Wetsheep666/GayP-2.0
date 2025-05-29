@@ -7,31 +7,36 @@ from message_templates import (
 )
 from database import add_reservation, cancel_reservation
 from matcher import try_match
-from utils import format_currency, generate_group_id
+from utils import format_currency
 
 def handle_event(event, line_bot_api):
-    text = event.message.text
+    text = event.message.text.strip()
     user_id = event.source.user_id
 
     if text.startswith("預約"):
-        try:
-            parts = text.split(" ")
-            start, end = parts[1].split("->")
-            time = parts[2] + " " + parts[3]
-            is_shared = 1 if parts[4] == "共乘" else 0
-            payment = parts[5]
-            add_reservation((user_id, start, end, time, is_shared, payment))
-            
-            # 嘗試配對
-            matched_info = try_match()
-            if matched_info:
-                group_id, price = matched_info
-                reply = confirm_match_message(group_id, format_currency(price))
-            else:
-                reply = TextSendMessage(text="已收到共乘資訊，暫時還沒配對到人，請稍等。")
-
-        except Exception:
+        parts = text.split(" ")
+        if len(parts) != 6 or "->" not in parts[1]:
+            # 格式錯誤，回傳教學訊息
             reply = reservation_instruction_message
+        else:
+            try:
+                start, end = parts[1].split("->")
+                time = parts[2] + " " + parts[3]
+                is_shared = 1 if parts[4] == "共乘" else 0
+                payment = parts[5]
+
+                # 寫入資料庫
+                add_reservation((user_id, start, end, time, is_shared, payment))
+
+                # 嘗試配對
+                matched_info = try_match()
+                if matched_info:
+                    group_id, price = matched_info
+                    reply = confirm_match_message(group_id, format_currency(price))
+                else:
+                    reply = TextSendMessage(text="已收到共乘資訊，暫時還沒配對到人，請稍等。")
+            except Exception as e:
+                reply = TextSendMessage(text=f"系統錯誤：{e}")
 
     elif text == "取消":
         cancel_reservation(user_id)
